@@ -6,8 +6,10 @@ WORKDIR /app
 # Copy monorepo root files
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
-# Copy package manifests for all workspace packages the API needs
+# Copy all workspace package manifests (pnpm requires all for lockfile validation)
 COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY apps/cli/package.json ./apps/cli/
 COPY packages/crypto/package.json ./packages/crypto/
 COPY packages/db/package.json ./packages/db/
 COPY packages/types/package.json ./packages/types/
