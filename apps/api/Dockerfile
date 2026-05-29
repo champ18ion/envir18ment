@@ -1,6 +1,8 @@
 FROM node:20-alpine
 RUN corepack enable
 
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Copy monorepo root files
