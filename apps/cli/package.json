@@ -1,23 +1,25 @@
 {
-  "name": "@envir18ment/cli",
+  "name": "@champ18ion/e18",
   "version": "0.0.1",
   "bin": {
     "e18": "dist/index.js"
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc"
+    "build": "tsup"
   },
   "dependencies": {
-    "@envir18ment/crypto": "workspace:*",
-    "@envir18ment/types": "workspace:*",
+    "argon2": "^0.31.2",
+    "tweetnacl": "^1.0.3",
     "chalk": "^4.1.2",
     "commander": "^12.0.0",
     "conf": "^12.0.0",
     "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "@types/prompts": "^2.4.9",
+    "tsup": "^8.0.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }
