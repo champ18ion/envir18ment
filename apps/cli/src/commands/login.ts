@@ -6,7 +6,7 @@ import { deriveKey, decryptPrivateKey } from '@envir18ment/crypto'
 
 export const loginCommand = new Command('login')
   .description('Authenticate with your envir18ment account')
-  .option('--api-url <url>', 'API URL', process.env.E18_API_URL ?? 'http://localhost:3001')
+  .option('--api-url <url>', 'API URL', process.env.E18_API_URL ?? 'https://ortq5x07ducezk3kwh3luvwv.187.127.142.231.sslip.io')
   .action(async (opts) => {
     console.log(chalk.bold('\n  envir18ment\n'))
 
