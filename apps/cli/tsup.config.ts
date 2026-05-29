@@ -7,9 +7,6 @@ export default defineConfig({
   external: ['argon2'],
   bundle: true,
   clean: true,
-  banner: {
-    js: '#!/usr/bin/env node',
-  },
   esbuildOptions(options) {
     options.alias = {
       '@envir18ment/crypto': path.resolve('../../packages/crypto/src/index.ts'),

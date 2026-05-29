@@ -1,6 +1,6 @@
 {
   "name": "@champ18ion/e18",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": {
     "e18": "dist/index.js"
   },
