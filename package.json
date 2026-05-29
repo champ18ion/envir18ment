@@ -1,0 +1,11 @@
+{
+  "name": "envir18ment",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel dev",
+    "build": "pnpm --recursive build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

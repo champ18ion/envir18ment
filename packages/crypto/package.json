@@ -1,0 +1,17 @@
+{
+  "name": "@envir18ment/crypto",
+  "version": "0.0.1",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "tweetnacl": "^1.0.3",
+    "argon2": "^0.31.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}
