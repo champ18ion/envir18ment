@@ -2,4 +2,4 @@
 cmds = []
 
 [start]
-cmd = "node_modules/.bin/tsx apps/api/src/index.ts"
+cmd = "pnpm --filter @envir18ment/api exec tsx src/index.ts"
