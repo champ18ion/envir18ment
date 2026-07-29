@@ -1,14 +1,13 @@
 import { Router } from 'express'
-import { eq, desc } from 'drizzle-orm'
+import { and, eq, desc } from 'drizzle-orm'
 import { getDb, activityLogs, users, workspaceMembers } from '@envir18ment/db'
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { requireAuth, type AuthRequest } from '../middleware/auth.js'
 
 export const activityRouter = Router()
 activityRouter.use(requireAuth)
 
 export async function logActivity(
-  db: NodePgDatabase<Record<string, unknown>>,
+  db: ReturnType<typeof getDb>,
   workspaceId: string,
   userId: string,
   action: string,
@@ -25,7 +24,10 @@ activityRouter.get('/', async (req: AuthRequest, res) => {
   const db = getDb()
 
   const member = await db.select().from(workspaceMembers)
-    .where(eq(workspaceMembers.workspaceId, workspaceId as string))
+    .where(and(
+      eq(workspaceMembers.workspaceId, workspaceId as string),
+      eq(workspaceMembers.userId, req.userId!),
+    ))
     .limit(1)
   if (!member.length) return res.status(403).json({ error: 'Forbidden' })
 

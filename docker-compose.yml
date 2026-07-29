@@ -8,5 +8,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
+      WEB_URL: ${WEB_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS}
       PORT: 4040
     restart: unless-stopped

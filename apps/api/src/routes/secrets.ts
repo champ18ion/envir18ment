@@ -3,6 +3,7 @@ import { eq, and, isNull, isNotNull } from 'drizzle-orm'
 import { getDb, secrets, environments, environmentKeys, projects } from '@envir18ment/db'
 import { requireAuth, type AuthRequest } from '../middleware/auth.js'
 import { logActivity } from './activity.js'
+import { getEnvironmentPermission } from '../lib/access.js'
 
 async function getWorkspaceId(db: ReturnType<typeof getDb>, environmentId: string): Promise<string | null> {
   const [row] = await db.select({ workspaceId: projects.workspaceId })
@@ -45,6 +46,9 @@ secretRouter.post('/', async (req: AuthRequest, res) => {
 
   const db = getDb()
 
+  const permission = await getEnvironmentPermission(db, environmentId, req.userId!)
+  if (!permission?.canWrite) return res.status(403).json({ error: 'Write access required' })
+
   const [envKey] = await db.select().from(environmentKeys)
     .where(and(eq(environmentKeys.environmentId, environmentId), eq(environmentKeys.userId, req.userId!)))
     .limit(1)
@@ -76,6 +80,9 @@ secretRouter.delete('/:id', async (req: AuthRequest, res) => {
   const [secret] = await db.select().from(secrets).where(eq(secrets.id, req.params.id)).limit(1)
   if (!secret) return res.status(404).json({ error: 'Not found' })
 
+  const permission = await getEnvironmentPermission(db, secret.environmentId, req.userId!)
+  if (!permission?.canWrite) return res.status(403).json({ error: 'Write access required' })
+
   const [envKey] = await db.select().from(environmentKeys)
     .where(and(eq(environmentKeys.environmentId, secret.environmentId), eq(environmentKeys.userId, req.userId!)))
     .limit(1)
@@ -92,6 +99,9 @@ secretRouter.patch('/:id/restore', async (req: AuthRequest, res) => {
   const db = getDb()
   const [secret] = await db.select().from(secrets).where(eq(secrets.id, req.params.id)).limit(1)
   if (!secret) return res.status(404).json({ error: 'Not found' })
+
+  const permission = await getEnvironmentPermission(db, secret.environmentId, req.userId!)
+  if (!permission?.canWrite) return res.status(403).json({ error: 'Write access required' })
 
   const [envKey] = await db.select().from(environmentKeys)
     .where(and(eq(environmentKeys.environmentId, secret.environmentId), eq(environmentKeys.userId, req.userId!)))

@@ -3,6 +3,7 @@ import { eq, and } from 'drizzle-orm'
 import { getDb, environments, projects, workspaceMembers, environmentKeys, users } from '@envir18ment/db'
 import { requireAuth, type AuthRequest } from '../middleware/auth.js'
 import { generateEnvKey, encryptEnvKey } from '@envir18ment/crypto'
+import { getEnvironmentPermission, getProjectPermission } from '../lib/access.js'
 
 export const environmentRouter = Router()
 environmentRouter.use(requireAuth)
@@ -21,7 +22,10 @@ environmentRouter.get('/', async (req: AuthRequest, res) => {
   if (!member.length) return res.status(403).json({ error: 'Forbidden' })
 
   const result = await db.select().from(environments).where(eq(environments.projectId, projectId as string))
-  res.json(result)
+  const permissions = await Promise.all(result.map(environment =>
+    getEnvironmentPermission(db, environment.id, req.userId!),
+  ))
+  res.json(result.filter((_, index) => permissions[index] !== null))
 })
 
 environmentRouter.post('/', async (req: AuthRequest, res) => {
@@ -47,6 +51,8 @@ environmentRouter.post('/', async (req: AuthRequest, res) => {
 
   const envKey = await generateEnvKey()
   for (const { user } of members) {
+    const permission = await getProjectPermission(db, projectId, user.id)
+    if (!permission) continue
     const encryptedKey = await encryptEnvKey(envKey, user.publicKey)
     await db.insert(environmentKeys).values({ environmentId: env.id, userId: user.id, encryptedKey })
   }

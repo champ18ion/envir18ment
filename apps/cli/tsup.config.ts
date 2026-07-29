@@ -5,6 +5,7 @@ export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs'],
   external: ['argon2'],
+  noExternal: ['@envir18ment/crypto'],
   bundle: true,
   clean: true,
   esbuildOptions(options) {

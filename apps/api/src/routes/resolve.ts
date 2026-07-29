@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { eq, and } from 'drizzle-orm'
 import { getDb, workspaces, projects, environments, workspaceMembers } from '@envir18ment/db'
 import { requireAuth, type AuthRequest } from '../middleware/auth.js'
+import { getEnvironmentPermission } from '../lib/access.js'
 
 export const resolveRouter = Router()
 resolveRouter.use(requireAuth)
@@ -30,5 +31,7 @@ resolveRouter.get('/', async (req: AuthRequest, res) => {
     .limit(1)
   if (!env) return res.status(404).json({ error: 'Environment not found' })
 
+  const permission = await getEnvironmentPermission(db, env.id, req.userId!)
+  if (!permission) return res.status(403).json({ error: 'No access to this environment' })
   res.json({ environmentId: env.id })
 })

@@ -36,12 +36,12 @@ export default function RegisterPage() {
       localStorage.setItem("e18_publicKey", data.user.publicKey);
       sessionStorage.setItem("e18_privateKey", privateKey);
 
-      const invite = new URLSearchParams(window.location.search).get("invite");
-      if (invite) {
-        await fetch(`${API}/api/invites/${invite}/accept`, { method: "POST", headers: { Authorization: `Bearer ${data.token}` } });
+      const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+      if (returnTo?.startsWith("/")) {
+        router.push(returnTo);
+      } else {
+        router.push("/dashboard");
       }
-
-      router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

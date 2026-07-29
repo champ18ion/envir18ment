@@ -92,7 +92,7 @@ export default function Home() {
               <p style={{ fontSize: "12px", color: "#81899b" }}>Manage secrets in your browser</p>
             </div>
           </Link>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+          <a href="https://github.com/champ18ion/envir18ment" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
             <div style={{ padding: "20px 24px", background: "rgba(186,214,247,0.03)", border: "1px solid rgba(186,215,247,0.12)", borderRadius: "12px", boxShadow: "rgba(199,211,234,0.12) 0px 1px 1px 0px inset, rgba(199,211,234,0.05) 0px 24px 48px 0px inset, rgba(6,6,14,0.7) 0px 24px 32px 0px", minWidth: "200px", textAlign: "left", cursor: "pointer" }}>
               <p style={{ fontSize: "14px", color: "#ffffff", marginBottom: "4px", fontWeight: 500 }}>View code on GitHub</p>
               <p style={{ fontSize: "12px", color: "#81899b" }}>Star us · MIT license</p>
