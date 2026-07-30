@@ -180,16 +180,18 @@ export default function WorkspacePage() {
             )}
           </div>
 
-          <button onClick={() => setShowNew(true)} style={{ padding: "8px 16px", background: "rgba(186,214,247,0.06)", border: "1px solid rgba(186,215,247,0.12)", borderRadius: "999px", fontSize: "13px", color: "#d1e4fa", cursor: "pointer" }}>
-            New project
-          </button>
+          {isAdmin && (
+            <button onClick={() => setShowNew(true)} style={{ padding: "8px 16px", background: "rgba(186,214,247,0.06)", border: "1px solid rgba(186,215,247,0.12)", borderRadius: "999px", fontSize: "13px", color: "#d1e4fa", cursor: "pointer" }}>
+              New project
+            </button>
+          )}
         </div>
 
         {error && (
           <div style={{ padding: "10px 12px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "6px", marginBottom: "20px", fontSize: "13px", color: "#ef4444" }}>{error}</div>
         )}
 
-        {showNew && (
+        {showNew && isAdmin && (
           <form onSubmit={createProject} style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
             <input autoFocus value={newName} onChange={e => setNewName(e.target.value)} placeholder="Project name" required className="e18-input" style={{ flex: 1 }} />
             <button type="submit" disabled={creating} className="e18-btn-primary" style={{ width: "auto", padding: "0 20px" }}>{creating ? "Creating…" : "Create"}</button>
@@ -201,8 +203,12 @@ export default function WorkspacePage() {
           <div style={{ color: "#81899b", fontSize: "14px" }}>Loading…</div>
         ) : projects.length === 0 ? (
           <div style={{ padding: "48px", textAlign: "center", border: "1px dashed rgba(186,215,247,0.1)", borderRadius: "12px" }}>
-            <p style={{ color: "#81899b", fontSize: "14px", marginBottom: "12px" }}>No projects yet</p>
-            <button onClick={() => setShowNew(true)} style={{ fontSize: "13px", color: "#d1e4fa", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Create your first project</button>
+            <p style={{ color: "#81899b", fontSize: "14px", marginBottom: isAdmin ? "12px" : 0 }}>
+              {isAdmin ? "No projects yet" : "You do not have access to any projects yet"}
+            </p>
+            {isAdmin && (
+              <button onClick={() => setShowNew(true)} style={{ fontSize: "13px", color: "#d1e4fa", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Create your first project</button>
+            )}
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
