@@ -23,7 +23,7 @@ const program = new Command()
 program
   .name('e18')
   .description('envir18ment CLI — manage your env secrets')
-  .version('0.0.8')
+  .version('0.0.9')
   .enablePositionalOptions(true)
 
 program.addCommand(loginCommand)

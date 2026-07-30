@@ -7,6 +7,7 @@ import { config } from '../index.js'
 import { deriveKey, decryptEnvKey, decryptPrivateKey, encryptSecret } from '@envir18ment/crypto'
 import { apiFetch, getApiUrl } from '../lib/api.js'
 import { detectRepository, type RepositoryIdentity } from '../lib/repository.js'
+import { getGitContext } from '../lib/gitContext.js'
 
 interface Workspace { id: string; name: string; slug: string }
 interface Project { id: string; name: string; slug: string }
@@ -220,16 +221,31 @@ async function importSecrets(environmentId: string, secrets: { key: string; valu
   )
 
   process.stdout.write(chalk.gray(`  Encrypting and importing ${secrets.length} secrets...`))
-  for (const secret of secrets) {
+  const historyResponse = await apiFetch(`/api/v2/secrets/history?environmentId=${environmentId}`)
+  const history = historyResponse.ok
+    ? await historyResponse.json() as { key: string; revisionId: string }[]
+    : []
+  const baseRevisions = new Map<string, string>()
+  for (const entry of history) {
+    if (!baseRevisions.has(entry.key)) baseRevisions.set(entry.key, entry.revisionId)
+  }
+  const changes = secrets.map(secret => {
     const { ciphertext, iv } = encryptSecret(secret.value, envKey)
-    const res = await apiFetch('/api/secrets', {
-      method: 'POST',
-      body: JSON.stringify({ environmentId, key: secret.key, encryptedValue: ciphertext, iv }),
-    })
-    if (!res.ok) {
-      process.stdout.write('\r')
-      throw new Error(`Failed to import ${secret.key}`)
+    return {
+      key: secret.key,
+      encryptedValue: ciphertext,
+      iv,
+      baseRevisionId: baseRevisions.get(secret.key) ?? null,
     }
+  })
+  const res = await apiFetch('/api/v2/secrets/batch', {
+    method: 'POST',
+    body: JSON.stringify({ environmentId, changes, context: getGitContext() }),
+  })
+  if (!res.ok) {
+    process.stdout.write('\r')
+    const data = await res.json() as { error?: string }
+    throw new Error(data.error ?? 'Failed to import secrets')
   }
   process.stdout.write('\r')
   console.log(chalk.green(`  ✓ Imported ${secrets.length} encrypted secrets`))
