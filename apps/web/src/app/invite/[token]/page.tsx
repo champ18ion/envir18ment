@@ -33,9 +33,12 @@ export default function InvitePage() {
 
   useEffect(() => {
     const fragmentTimer = window.setTimeout(() => {
-      const currentFragment = window.location.hash;
-      setFragment(currentFragment);
-      sessionStorage.setItem("e18_invite_return", `/invite/${token}${currentFragment}`);
+      const keyStorageName = `e18_invite_key:${token}`;
+      const keyFromUrl = window.location.hash.slice(1);
+      if (keyFromUrl) sessionStorage.setItem(keyStorageName, keyFromUrl);
+      const preservedKey = keyFromUrl || sessionStorage.getItem(keyStorageName) || "";
+      setFragment(preservedKey ? `#${preservedKey}` : "");
+      sessionStorage.setItem("e18_invite_return", `/invite/${token}`);
     }, 0);
     fetch(`${API}/api/v2/invites/${token}`)
       .then(response => response.ok
@@ -53,7 +56,7 @@ export default function InvitePage() {
     setError("");
 
     try {
-      const shareKey = decodeURIComponent(fragment.slice(1));
+      const shareKey = fragment.slice(1);
       if (!shareKey) throw new Error("This invite is missing its decryption key");
 
       const payload = JSON.parse(
@@ -78,6 +81,8 @@ export default function InvitePage() {
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : "Could not accept invitation");
       setAccepting(false);
+      sessionStorage.removeItem(`e18_invite_key:${token}`);
+      sessionStorage.removeItem("e18_invite_return");
     }
       acceptStarted.current = false;
   }
