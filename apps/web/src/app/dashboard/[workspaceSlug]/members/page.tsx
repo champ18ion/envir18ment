@@ -106,7 +106,11 @@ export default function MembersPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setInviteLink(`${data.inviteUrl}#${encodeURIComponent(shareKey)}`);
+      const urlSafeShareKey = shareKey
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+      setInviteLink(`${data.inviteUrl}#${urlSafeShareKey}`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Failed to generate invite"); }
     finally { setGeneratingLink(false); }
   }
