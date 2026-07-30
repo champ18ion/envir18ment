@@ -1,7 +1,7 @@
 import { config } from '../index.js'
 
 export function getApiUrl(): string {
-  return (config.get('apiUrl') as string) ?? 'https://ortq5x07ducezk3kwh3luvwv.187.127.142.231.sslip.io'
+  return ((config.get('apiUrl') as string) ?? 'https://ortq5x07ducezk3kwh3luvwv.187.127.142.231.sslip.io').replace(/\/+$/, '')
 }
 
 export function getToken(): string | null {

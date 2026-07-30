@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deriveKey, decryptPrivateKey } from "@/lib/crypto";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 export default function RegisterPage() {
   const router = useRouter();

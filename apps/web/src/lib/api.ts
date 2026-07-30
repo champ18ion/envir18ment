@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 function clearAuth() {
   if (typeof window === "undefined") return;

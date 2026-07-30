@@ -7,7 +7,7 @@ import { DashboardNav } from "@/components/DashboardNav";
 import { apiFetch } from "@/lib/api";
 import { decryptEnvKey, decryptSecret, encryptSecret } from "@/lib/crypto";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 const TYPES = [
   { value: "ssh-key",         label: "SSH Key" },

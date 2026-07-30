@@ -6,7 +6,7 @@ import { Trash2, Shield, User, Copy, Check, Link2 } from "lucide-react";
 import { decryptEnvKey, encryptEnvKey } from "@/lib/crypto";
 import { DashboardNav } from "@/components/DashboardNav";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 interface Member { id: string; email: string; publicKey: string; role: string; joinedAt: string; needsKeys: boolean }
 

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Copy, Check, LogOut } from "lucide-react";
 import { DashboardNav } from "@/components/DashboardNav";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 export default function ProfilePage() {
   const router = useRouter();

@@ -120,7 +120,7 @@ sealedInvitesRouter.post('/', requireAuth, async (req: AuthRequest, res) => {
     createdBy: req.userId!,
   }).returning({ id: sealedInvites.id, expiresAt: sealedInvites.expiresAt })
 
-  const webUrl = process.env.WEB_URL ?? 'http://localhost:3000'
+  const webUrl = (process.env.WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
   res.status(201).json({
     id: invite.id,
     token,

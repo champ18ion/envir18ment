@@ -5,15 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { decryptSecret, encryptEnvKey } from "@/lib/crypto";
 import { apiFetch } from "@/lib/api";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 interface Invite {
   workspaceName: string;
   workspaceSlug: string;
-  scope: string;
-  role: string;
-  sealedPayload: string;
-  payloadNonce: string;
+  scope?: string;
+  role?: string;
+  sealedPayload?: string;
+  payloadNonce?: string;
 }
 
 interface SealedPayload {
@@ -25,6 +25,7 @@ export default function InvitePage() {
   const { token } = useParams<{ token: string }>();
   const router = useRouter();
   const [invite, setInvite] = useState<Invite | null>(null);
+  const [inviteKind, setInviteKind] = useState<"legacy" | "sealed">("sealed");
   const [fragment, setFragment] = useState("");
   const [error, setError] = useState("");
   const [accepting, setAccepting] = useState(false);
@@ -32,11 +33,15 @@ export default function InvitePage() {
 
   useEffect(() => {
     const fragmentTimer = window.setTimeout(() => setFragment(window.location.hash), 0);
-    fetch(`${API}/api/v2/invites/${token}`)
+    const legacy = /^[a-f0-9]{48}$/i.test(token);
+    const kind = legacy ? "legacy" : "sealed";
+    const endpoint = legacy ? `/api/invites/${token}` : `/api/v2/invites/${token}`;
+    setInviteKind(kind);
+    fetch(`${API}${endpoint}`)
       .then(response => response.ok
         ? response.json()
         : response.json().then((data: { error: string }) => { throw new Error(data.error); }))
-      .then(setInvite)
+      .then((data: Invite) => setInvite(data))
       .catch((cause: Error) => setError(cause.message));
     return () => window.clearTimeout(fragmentTimer);
   }, [token]);
@@ -47,11 +52,22 @@ export default function InvitePage() {
     setError("");
 
     try {
+      if (inviteKind === "legacy") {
+        const response = await apiFetch(`/api/invites/${token}/accept`, {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? "Could not accept invitation");
+        router.push(`/dashboard/${data.workspaceSlug}`);
+        return;
+      }
+
       const shareKey = decodeURIComponent(fragment.slice(1));
       if (!shareKey) throw new Error("This invite is missing its decryption key");
 
       const payload = JSON.parse(
-        decryptSecret(invite.sealedPayload, invite.payloadNonce, shareKey),
+        decryptSecret(invite.sealedPayload!, invite.payloadNonce!, shareKey),
       ) as SealedPayload;
       if (payload.version !== 1 || !payload.keys.length) throw new Error("Unsupported invitation");
 
@@ -91,13 +107,13 @@ export default function InvitePage() {
             <p style={{ color: "#81899b", fontSize: "13px" }}>{error ? "Invitation unavailable" : "Validating sealed invitation…"}</p>
           ) : (
             <>
-              <p style={{ fontSize: "11px", color: "#81899b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Sealed invitation to</p>
+              <p style={{ fontSize: "11px", color: "#81899b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>{inviteKind === "sealed" ? "Sealed invitation to" : "Invitation to"}</p>
               <h1 className="font-heading e18-gradient-text" style={{ fontSize: "24px", fontWeight: 400, marginBottom: "10px" }}>{invite.workspaceName}</h1>
-              <p style={{ color: "#81899b", fontSize: "13px", marginBottom: "24px" }}>{invite.scope} access · {invite.role}</p>
+              <p style={{ color: "#81899b", fontSize: "13px", marginBottom: "24px" }}>{inviteKind === "legacy" ? "workspace access · member" : `${invite.scope} access · ${invite.role}`}</p>
 
               {isLoggedIn ? (
-                <button onClick={accept} disabled={accepting || !fragment} className="e18-btn-primary">
-                  {accepting ? "Decrypting and granting access…" : "Accept sealed invite"}
+                <button onClick={accept} disabled={accepting || (inviteKind === "sealed" && !fragment)} className="e18-btn-primary">
+                  {accepting ? "Granting access…" : inviteKind === "sealed" ? "Accept sealed invite" : "Accept invite"}
                 </button>
               ) : (
                 <div style={{ display: "grid", gap: "10px" }}>
@@ -106,9 +122,11 @@ export default function InvitePage() {
                 </div>
               )}
 
-              <p style={{ color: "#3f4959", fontSize: "11px", lineHeight: 1.5, marginTop: "18px" }}>
-                Keys are unsealed in this browser and re-encrypted for your account. The server never receives the link&apos;s decryption key.
-              </p>
+              {inviteKind === "sealed" && (
+                <p style={{ color: "#3f4959", fontSize: "11px", lineHeight: 1.5, marginTop: "18px" }}>
+                  Keys are unsealed in this browser and re-encrypted for your account. The server never receives the link&apos;s decryption key.
+                </p>
+              )}
             </>
           )}
         </div>

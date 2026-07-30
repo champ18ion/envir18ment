@@ -6,7 +6,7 @@ import { Eye, EyeOff, Copy, Check, Pencil, Trash2, Plus, Upload } from "lucide-r
 import { DashboardNav } from "@/components/DashboardNav";
 import { decryptEnvKey, decryptSecret, encryptSecret } from "@/lib/crypto";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040";
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
 
 interface Env { id: string; name: string; projectId: string }
 interface Secret { id: string; key: string; encryptedValue: string; iv: string }
