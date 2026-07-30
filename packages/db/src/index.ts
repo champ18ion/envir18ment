@@ -1,13 +1,14 @@
-import { drizzle } from 'drizzle-orm/neon-http'
-import { neon } from '@neondatabase/serverless'
+import { drizzle } from 'drizzle-orm/neon-serverless'
+import { Pool } from '@neondatabase/serverless'
 import * as schema from './schema'
 
 let _db: ReturnType<typeof drizzle> | null = null
+let _pool: Pool | null = null
 
 export function getDb() {
   if (!_db) {
-    const sql = neon(process.env.DATABASE_URL!)
-    _db = drizzle(sql, { schema })
+    _pool = new Pool({ connectionString: process.env.DATABASE_URL! })
+    _db = drizzle(_pool, { schema })
   }
   return _db
 }
