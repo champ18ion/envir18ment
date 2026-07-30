@@ -11,7 +11,6 @@ import { environmentRouter } from './routes/environments.js'
 import { resolveRouter } from './routes/resolve.js'
 import { membersRouter } from './routes/members.js'
 import { activityRouter } from './routes/activity.js'
-import { invitesRouter } from './routes/invites.js'
 import { vaultRouter } from './routes/vault.js'
 import { repositoryRouter } from './routes/repositories.js'
 import { secretVersionsRouter } from './routes/secretVersions.js'
@@ -63,7 +62,6 @@ app.use('/api/environments', environmentRouter)
 app.use('/api/resolve', resolveRouter)
 app.use('/api/members', membersRouter)
 app.use('/api/activity', activityRouter)
-app.use('/api/invites', invitesRouter)
 app.use('/api/vault', vaultRouter)
 app.use('/api/repositories', repositoryRouter)
 app.use('/api/v2/secrets', secretVersionsRouter)

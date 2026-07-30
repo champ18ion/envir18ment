@@ -37,7 +37,7 @@ export const acceptCommand = new Command('accept')
     } catch {
       throw new Error('Invitation decryption failed')
     }
-    if (payload.version !== 1 || !Array.isArray(payload.keys) || !payload.keys.length) {
+    if (payload.version !== 1 || !Array.isArray(payload.keys)) {
       throw new Error('Unsupported invitation payload')
     }
 

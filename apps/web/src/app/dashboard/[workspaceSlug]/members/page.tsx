@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { Trash2, Shield, User, Copy, Check, Link2 } from "lucide-react";
-import { decryptEnvKey, encryptEnvKey } from "@/lib/crypto";
+import { decryptEnvKey, encryptEnvKey, encryptSecret, generateEnvKey } from "@/lib/crypto";
 import { DashboardNav } from "@/components/DashboardNav";
 
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4040").replace(/\/+$/, "");
@@ -58,15 +58,56 @@ export default function MembersPage() {
   async function generateInvite() {
     setGeneratingLink(true);
     try {
-      const res = await fetch(`${API}/api/invites`, {
+      if (!privateKey) throw new Error("Sign in again to load your encryption key");
+
+      const projectsResponse = await fetch(`${API}/api/projects?workspaceId=${workspaceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!projectsResponse.ok) throw new Error("Could not load workspace projects");
+      const projects = await projectsResponse.json() as { id: string }[];
+      const environmentLists = await Promise.all(projects.map(async project => {
+        const response = await fetch(`${API}/api/environments?projectId=${project.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error("Could not load project environments");
+        return response.json() as Promise<{ id: string }[]>;
+      }));
+      const environments = environmentLists.flat();
+      const keys = await Promise.all(environments.map(async environment => {
+        const response = await fetch(`${API}/api/secrets?environmentId=${environment.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error("Could not access every environment key");
+        const { encryptedKey } = await response.json() as { encryptedKey: string };
+        return {
+          environmentId: environment.id,
+          envKey: decryptEnvKey(encryptedKey, privateKey),
+        };
+      }));
+
+      const shareKey = generateEnvKey();
+      const { ciphertext, iv } = encryptSecret(JSON.stringify({
+        version: 1,
+        workspaceId,
+        scope: "workspace",
+        keys,
+      }), shareKey);
+      const res = await fetch(`${API}/api/v2/invites`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ workspaceId }),
+        body: JSON.stringify({
+          workspaceId,
+          scope: "workspace",
+          role: "member",
+          sealedPayload: ciphertext,
+          payloadNonce: iv,
+          expiresInHours: 24 * 7,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setInviteLink(`${window.location.origin}/invite/${data.token}`);
-    } catch { setError("Failed to generate invite"); }
+      setInviteLink(`${data.inviteUrl}#${encodeURIComponent(shareKey)}`);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Failed to generate invite"); }
     finally { setGeneratingLink(false); }
   }
 

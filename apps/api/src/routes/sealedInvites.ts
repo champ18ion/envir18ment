@@ -131,7 +131,7 @@ sealedInvitesRouter.post('/', requireAuth, async (req: AuthRequest, res) => {
 
 sealedInvitesRouter.post('/:token/accept', requireAuth, async (req: AuthRequest, res) => {
   const { encryptedKeys } = req.body as { encryptedKeys?: EncryptedKeyGrant[] }
-  if (!Array.isArray(encryptedKeys) || !encryptedKeys.length) {
+  if (!Array.isArray(encryptedKeys)) {
     return res.status(400).json({ error: 'encryptedKeys required' })
   }
 

@@ -60,6 +60,10 @@ export function encryptEnvKey(envKey: string, recipientPublicKey: string): strin
   return JSON.stringify({ ephPub: b64(ephemeral.publicKey), nonce: b64(nonce), ciphertext: b64(ciphertext) });
 }
 
+export function generateEnvKey(): string {
+  return b64(nacl.randomBytes(nacl.secretbox.keyLength));
+}
+
 export function encryptSecret(value: string, envKey: string): { ciphertext: string; iv: string } {
   const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
   const ciphertext = nacl.secretbox(new TextEncoder().encode(value), nonce, unb64(envKey));
