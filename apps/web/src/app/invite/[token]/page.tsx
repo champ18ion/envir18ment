@@ -32,7 +32,11 @@ export default function InvitePage() {
   const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("e18_token");
 
   useEffect(() => {
-    const fragmentTimer = window.setTimeout(() => setFragment(window.location.hash), 0);
+    const fragmentTimer = window.setTimeout(() => {
+      const currentFragment = window.location.hash;
+      setFragment(currentFragment);
+      sessionStorage.setItem("e18_invite_return", `/invite/${token}${currentFragment}`);
+    }, 0);
     fetch(`${API}/api/v2/invites/${token}`)
       .then(response => response.ok
         ? response.json()
@@ -84,8 +88,6 @@ export default function InvitePage() {
     }
   }, [invite, fragment, isLoggedIn]);
 
-  const returnTo = encodeURIComponent(`/invite/${token}${fragment}`);
-
   return (
     <div style={{ background: "#05060f", minHeight: "100vh", display: "flex", flexDirection: "column", color: "#d8ecf8" }}>
       <nav style={{ padding: "16px 32px", borderBottom: "1px solid rgba(186,215,247,0.06)" }}>
@@ -110,8 +112,8 @@ export default function InvitePage() {
                 </button>
               ) : (
                 <div style={{ display: "grid", gap: "10px" }}>
-                  <Link href={`/register?returnTo=${returnTo}`} className="e18-btn-primary" style={{ textAlign: "center", textDecoration: "none" }}>Create account</Link>
-                  <Link href={`/login?returnTo=${returnTo}`} style={{ textAlign: "center", textDecoration: "none", padding: "11px", borderRadius: "6px", border: "1px solid rgba(186,215,247,0.12)", color: "#d1e4fa", fontSize: "14px" }}>Sign in instead</Link>
+                  <Link href="/register?invite=1" className="e18-btn-primary" style={{ textAlign: "center", textDecoration: "none" }}>Create account</Link>
+                  <Link href="/login?invite=1" style={{ textAlign: "center", textDecoration: "none", padding: "11px", borderRadius: "6px", border: "1px solid rgba(186,215,247,0.12)", color: "#d1e4fa", fontSize: "14px" }}>Sign in instead</Link>
                 </div>
               )}
 

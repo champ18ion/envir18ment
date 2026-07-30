@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deriveKey, decryptPrivateKey } from "@/lib/crypto";
@@ -12,6 +12,11 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [inviteFlow, setInviteFlow] = useState(false);
+
+  useEffect(() => {
+    setInviteFlow(new URLSearchParams(window.location.search).get("invite") === "1");
+  }, []);
 
   async function submit(e: React.SyntheticEvent) {
     e.preventDefault();
@@ -36,6 +41,13 @@ export default function RegisterPage() {
       localStorage.setItem("e18_publicKey", data.user.publicKey);
       sessionStorage.setItem("e18_privateKey", privateKey);
 
+      const isInvite = new URLSearchParams(window.location.search).get("invite") === "1";
+      const inviteReturn = isInvite ? sessionStorage.getItem("e18_invite_return") : null;
+      if (inviteReturn?.startsWith("/invite/")) {
+        sessionStorage.removeItem("e18_invite_return");
+        router.push(inviteReturn);
+        return;
+      }
       const returnTo = new URLSearchParams(window.location.search).get("returnTo");
       if (returnTo?.startsWith("/")) {
         router.push(returnTo);
@@ -55,7 +67,7 @@ export default function RegisterPage() {
 
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 32px", borderBottom: "1px solid rgba(186,215,247,0.06)", position: "relative", zIndex: 1 }}>
         <Link href="/" style={{ fontFamily: "var(--font-mono)", fontSize: "13px", color: "#81899b", textDecoration: "none" }}>envir18ment</Link>
-        <Link href="/login" style={{ fontSize: "13px", color: "#9da7ba", textDecoration: "none" }}>Sign in</Link>
+        <Link href={inviteFlow ? "/login?invite=1" : "/login"} style={{ fontSize: "13px", color: "#9da7ba", textDecoration: "none" }}>Sign in</Link>
       </nav>
 
       <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", position: "relative", zIndex: 1 }}>
@@ -89,7 +101,7 @@ export default function RegisterPage() {
 
             <p style={{ marginTop: "20px", textAlign: "center", fontSize: "13px", color: "#81899b" }}>
               Already have an account?{" "}
-              <Link href="/login" style={{ color: "#d1e4fa", textDecoration: "none" }}>Sign in</Link>
+              <Link href={inviteFlow ? "/login?invite=1" : "/login"} style={{ color: "#d1e4fa", textDecoration: "none" }}>Sign in</Link>
             </p>
           </div>
         </form>
