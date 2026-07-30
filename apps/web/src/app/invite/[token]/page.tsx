@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { decryptSecret, encryptEnvKey } from "@/lib/crypto";
@@ -28,6 +28,7 @@ export default function InvitePage() {
   const [fragment, setFragment] = useState("");
   const [error, setError] = useState("");
   const [accepting, setAccepting] = useState(false);
+  const acceptStarted = useRef(false);
   const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("e18_token");
 
   useEffect(() => {
@@ -42,7 +43,8 @@ export default function InvitePage() {
   }, [token]);
 
   async function accept() {
-    if (!invite) return;
+    if (!invite || acceptStarted.current) return;
+    acceptStarted.current = true;
     setAccepting(true);
     setError("");
 
@@ -73,7 +75,14 @@ export default function InvitePage() {
       setError(cause instanceof Error ? cause.message : "Could not accept invitation");
       setAccepting(false);
     }
+      acceptStarted.current = false;
   }
+
+  useEffect(() => {
+    if (invite && fragment && isLoggedIn) {
+      void accept();
+    }
+  }, [invite, fragment, isLoggedIn]);
 
   const returnTo = encodeURIComponent(`/invite/${token}${fragment}`);
 
@@ -97,7 +106,7 @@ export default function InvitePage() {
 
               {isLoggedIn ? (
                 <button onClick={accept} disabled={accepting || !fragment} className="e18-btn-primary">
-                  {accepting ? "Granting access…" : "Accept sealed invite"}
+                  {accepting ? "Granting access and opening workspace…" : "Accept sealed invite"}
                 </button>
               ) : (
                 <div style={{ display: "grid", gap: "10px" }}>
